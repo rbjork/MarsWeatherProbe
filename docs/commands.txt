@@ -1,0 +1,2 @@
+curl -XGET 'https://search-movies990-nkgvmqmha4e5mkvje6wlk73zwu.us-west-1.es.amazonaws.com/movies990/_search?q=mars'
+curl -XPOST https://search-movies990-nkgvmqmha4e5mkvje6wlk73zwu.us-west-1.es.amazonaws.com/_bulk --data-binary @bulk_movies.json -H 'Content-Type: application/json'

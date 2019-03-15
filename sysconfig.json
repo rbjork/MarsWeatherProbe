@@ -1,0 +1,33 @@
+{
+  'devices': {
+    'tempsensor': {
+      'ip': '127.0.0.1',
+      'port': 63433,
+      'remote': 0
+    },
+    'windsensor': {
+      'ip': '127.0.0.1',
+      'port': 63432,
+      'remote': 0
+    },
+    'hub': {
+      'ip': '127.0.0.1',
+      'port': 63431
+    },
+    'cmdconsole': {
+      'ip': '127.0.0.1',
+      'port': 63431
+    }
+  },
+  'cloud':{
+    'aws': {
+      'url': ''
+    },
+    'aws_es': {
+      'url': ''
+    },
+    'aws_apigateway': {
+      'url': ''
+    }
+  }
+}
