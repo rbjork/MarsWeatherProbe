@@ -14,12 +14,15 @@ from MarsProbeWindSensor import MarsProbeWindSensor
 from ConfigParser import ConfigParser
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+
 marsProbeTemperatureSensor = None
 marsProbeWindSensor = None
+temp_port = ""
+temp_ip = ""
+wind_port = ""
+wind_ip = ""
 
-AWS_ELASTIC_SEARCH_ENDPOINT = ""
 AWS_APIGATEWAY = ""
-
 
 
 @app.route("/getsensorreading", methods=['GET'])
@@ -27,27 +30,33 @@ def getsensorreading():
     tempreading = marsProbeTemperatureSensor.getCurrentSensorReadings()  # Version 1.0
     windreading = marsProbeWindSensor.getCurrentSensorReadings()  # Version 1.0
 
-
-
 def sendHourlyTempeturesV1():
     tempreading = marsProbeTemperatureSensor.getCurrentSensorReadings()  # Version 1.0
-    r = requests.post(AWS_ELASTIC_SEARCH_ENDPOINT, data=tempreading)
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
 
 def sendHourlyTempeturesV2(tempreading):
-    r = requests.post(AWS_ELASTIC_SEARCH_ENDPOINT, data=tempreading)
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
 
+def post5daysWeatherData(nasa=True):
+    headers = {"Content-Type":"application/json", "x-api-key":"fbgAxsG1pr3H7WQrUPoWz4V0aDzF5Knua938WYja"}
+    if nasa:
+        with urllib.request.urlopen(urlvalue) as url:
+            weatherdata = json.loads(url.read().decode())
+    else:
+        with open("./logs/currentsensordata.json",'r') as fp
+            weatherdata = json.loads(fp.read().decode())
+    r = requests.post(AWS_APIGATEWAY, data=weatherdata, headers=headers)
 
 def setup():
-    global marsProbeTemperatureSensor,AWS_ELASTIC_SEARCH_ENDPOINT,AWS_APIGATEWAY, temp_ip, temp_host
+    global marsProbeTemperatureSensor, marsProbeWindSensor, AWS_APIGATEWAY, temp_ip, temp_port, wind_ip, wind_port 
     marsProbeTemperatureSensor = MarsProbeTemperatureSensor()
     marsProbeWindSensor = MarsProbeWindSensor()  # not used
     parser = ConfigParser("./sysconfig.json")
     temp_ip = parser.parseParamFromConfig('devices/tempsensor/ip')
-    temp_host = parser.parseParamFromConfig('devices/tempsensor/host')
+    temp_port = parser.parseParamFromConfig('devices/tempsensor/port')
+    wind_ip = parser.parseParamFromConfig('devices/windsensor/ip')
+    wind_port = parser.parseParamFromConfig('devices/windsensor/port')
     bysocket = parser.parseParamFromConfig('devices/tempsensor/hassocket')
-    AWS_ELASTIC_SEARCH_ENDPOINT = parser.parseParamFromConfig('cloud/aws_es/url')
     AWS_APIGATEWAY = parser.parseParamFromConfig('cloud/aws_apigateway/url')
     while True:
         time.sleep(10)
@@ -60,20 +69,20 @@ def setup():
 # UPGRADE Version 2.0
 def connectTempetureSensor():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: # client
-        s.connect((HOST, TEMPSENSORPORT))
+        s.connect((temp_ip, temp_port))
         s.sendall(b'Send Temperature')
         tempdata = s.recv(1024)
         sendHourlyTempeturesV2(tempdata)
-    print('Received', repr(data))
+    print('Received', repr(tempdata))
 
 
 # UPGRADE Version 2.0
 def connectWindowSensor():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, WINDSENSORPORT))
+        s.connect((wind_ip, wind_port))
         s.sendall(b'Send Wind')
         winddata = s.recv(1024)
-    print('Received', repr(data))
+    print('Received', repr(winddata))
 
 
 if __name__ == "__main__":

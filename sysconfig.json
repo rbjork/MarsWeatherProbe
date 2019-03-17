@@ -1,33 +1,30 @@
 {
-  'devices': {
-    'tempsensor': {
-      'ip': '127.0.0.1',
-      'port': 63433,
-      'remote': 0
+  "devices": {
+    "tempsensor": {
+      "ip": "127.0.0.1",
+      "port": 63433,
+      "remote": 0
     },
-    'windsensor': {
-      'ip': '127.0.0.1',
-      'port': 63432,
-      'remote': 0
+    "windsensor": {
+      "ip": "127.0.0.1",
+      "port": 63432,
+      "remote": 0
     },
-    'hub': {
-      'ip': '127.0.0.1',
-      'port': 63431
+    "hub": {
+      "ip": "127.0.0.1",
+      "port": 63431
     },
-    'cmdconsole': {
-      'ip': '127.0.0.1',
-      'port': 63431
+    "cmdconsole": {
+      "ip": "127.0.0.1",
+      "port": 63431
     }
   },
-  'cloud':{
-    'aws': {
-      'url': ''
+  "cloud":{
+    "aws_apigateway": {
+      "url": "https://vlqojfxgzl.execute-api.us-west-1.amazonaws.com/marsweather1"
     },
-    'aws_es': {
-      'url': ''
-    },
-    'aws_apigateway': {
-      'url': ''
+    "aws_s3":{
+      "url": ""
     }
   }
 }

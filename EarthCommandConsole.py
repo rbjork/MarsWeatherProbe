@@ -9,6 +9,8 @@ import numpy as np
 import os
 import time
 
+from WeatherDataParser import WeatherDataParser
+
 from ConfigParser import ConfigParser
 
 NASA_WEATHER_PROBE_URL = "https://mars.nasa.gov/rss/api/?feed=weather&category=insight&feedtype=json&ver=1.0"
@@ -21,40 +23,10 @@ NORMALRANGE = {'min':-140, 'max':50}  # tempeture Fahrenheit
 
 class EarthCommandConsole():
 
-    def parse_sensor_json(self, input_json, target_key, target_date):
-        if type(input_json) is dict and input_json:
-            matching = []
-            for key in input_json:
-                if key == target_key and target_date in input_json[key]:
-                    return {'DATETIME':input_json[key], 'AT':input_json['AT']}
-                res = self.parse_sensor_json(input_json[key], target_key, target_date)
-                if res:
-                    matching.append(res)
-            if len(matching) > 0:
-                return matching
-            else:
-                return False
-        elif type(input_json) is list and input_json:
-            matching = []
-            for entity in input_json:
-                res = self.parse_sensor_json(entity, target_key, target_date)
-                if res:
-                    matching.append(res)
-            if len(matching) > 0:
-                return matching
-            else:
-                return False
-
-
-    def parseLog4Tempeture(self, date):
-        with open("./logs/currentSensorData.json",'r') as fp:
-            data = json.loads(fp.read())
-            fp.close()
-        First_UTCResult = self.parse_sensor_json(data,'First_UTC',date)
-        Last_UTCResult = self.parse_sensor_json(data,'Last_UTC',date)
-        return {"First_UTCResult":First_UTCResult,"Last_UTCResult":Last_UTCResult}
-
-
+    def __init__(self):
+        parser = ConfigParser("./sysconfig.json")
+        self.weatherDataParser = WeatherDataParser()
+        self.awsapi = parser.parseParamFromConfig('cloud/aws_apigateway/url')
 
 
     def checkTempeture(self, sensordata):
@@ -75,7 +47,6 @@ class EarthCommandConsole():
             message = "Temp below normal range"
 
         return {'tempeture':tempeture,'message':message}
-
 
 
     def getSensorData(self,urlvalue):
@@ -103,11 +74,25 @@ class EarthCommandConsole():
     def getSensorDataAndSaveToLog(self,urlvalue):
         with urllib.request.urlopen(urlvalue) as url:
             data = json.loads(url.read().decode())
-        self.writeToLog(json.dump(data))
-        with open("currentSensorData.json",'w') as fp:
-            json.dump(data, fp)
-            fp.close()
+            self.writeToLog(json.dumps(data))
+            with open("./logs/currentSensorData1.json",'w') as fp:
+                json.dump(data, fp)
+                fp.close()
+
         return data
+
+    def getMarsWeatherForLastFiveDays(self):
+        self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
+        today = datetime.today().date()
+        weather = []
+        for i in range(5):
+            dayIn5 = today - timedelta(days=i+1)
+            month = str(dayIn5.month) if dayIn5.month > 9 else '0'+ str(dayIn5.month)
+            day = str(dayIn5.day) if dayIn5.day > 9 else '0' + str(dayIn5.day)
+            date = "{}-{}-{}".format(dayIn5.year, month, day)
+            res = self.weatherDataParser.parseLog4Weather(date)
+            weather.append(res)
+        return weather
 
 
     def testCasehalfSecond(self,urlvalue):
@@ -123,35 +108,14 @@ class EarthCommandConsole():
         return mean
 
 
-    def getMarsWeatherForLastFiveDays(self):
-        getSensorDataAndSaveToLog(self,NASA_WEATHER_PROBE_URL)
-        today = datetime.today().date()
-        weather = []
-        for i in range(5):
-            yesturday = today - timedelta(days=i)
-            date = "{}-{}-{}".format(yesturday.year,yesturday.month,yesturday.day)
-            res = self.parseLog4Tempeture(date)
-            weather.append(res)
-        for w in weather:
-            wfirst = w['First_UTCResult']
-            wlast = w['Last_UTCResult']
-            if wfirst:
-                temp = wfirst[0]['AT']['mn']
-            elif wlast:
-                temp = wlast[0]['AT']['mx']
-
-    def setup(self):
-        parser = ConfigParser("./sysconfig.json")
-        self.awsurl = parser.parseParamFromConfig('aws/url')
-
-
-
-#if __name__ == "__main__":
-
-    # result =parseLog4Tempeture("2019-03-04")
-    # print('2019-03-04',result)
-    # result =parseLog4Tempeture("2019-03-05")
-    # print('2019-03-05',result)
+if __name__ == "__main__":
+    earthConsole = EarthCommandConsole()
+    result = earthConsole.getMarsWeatherForLastFiveDays()
+    print(result)
+    #result = earthConsole.parseLog4Tempeture("2019-03-04")
+    #print(result)
+    #result =earthConsole.parseLog4Tempeture("2019-03-05")
+    #print(result)
     # result =parseLog4Tempeture("2019-03-06")
     # print("2019-03-06",result)
     # result =parseLog4Tempeture("2019-03-07")

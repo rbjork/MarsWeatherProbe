@@ -13,9 +13,8 @@ class ConfigParser():
         path = parampath.split('/')
         config = copy.deepcopy(self.config)
         for i in range(len(path)):
-            config = config[parampath[i]]
+            config = config[path[i]]
         if type(config) is dict:
             return json.dumps(config)
         else:
             return str(config)
-
