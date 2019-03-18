@@ -1,9 +1,9 @@
-
+import json 
 
 class WeatherDataParser():
     def __init__(self):
         print("WeatherDataParser intiallized")
-        
+
     def parse_temperature_sensor_json(self, input_json, target_key, target_date):
         if type(input_json) is dict and input_json:
             matching = []

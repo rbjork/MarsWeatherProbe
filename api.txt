@@ -1,0 +1,16 @@
+weather api key: fbgAxsG1pr3H7WQrUPoWz4V0aDzF5Knua938WYja
+
+ID
+pdh8ipk97j
+Name
+weatherapikeys
+API key
+fbgAxsG1pr3H7WQrUPoWz4V0aDzF5Knua938WYja
+Description
+Keys to access mars weather
+
+
+root url:  apigateway.us-west-1.amazonaws.com/restapis/vlqojfxgzl/resources/sdg0nvsneh/methods/POST
+curl -XPOST https://apigateway.us-west-1.amazonaws.com/restapis/vlqojfxgzl/resources/sdg0nvsneh/methods/POST --data-binary @sensordata.json -H 'Content-Type: application/json'
+
+curl -XPOST https://search-s3-es-search-pxnij5i3orrsfd42fgatgtawba.us-west-1.es.amazonaws.com/_bulk --data-binary @sensordata.json -H 'Content-Type: application/json'

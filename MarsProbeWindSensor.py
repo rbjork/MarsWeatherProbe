@@ -38,7 +38,7 @@ class MarsProbeWindSensor():
         self.host = parser.parseParamFromConfig('devices/hub/host')
 
     def connect(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: # Server 
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: # Server
             s.bind((self.ip, self.host))
             s.listen()
             conn, addr = s.accept()
@@ -52,12 +52,12 @@ class MarsProbeWindSensor():
                     conn.sendall(winddata)
 
 	def getCurrentSensorReadings(self):
-		ctv = np.random.normal()
-		tvalues = np.random.normal(-50.0,10.0,5)
-		avv = tvalues.mean()
-		mnv = min(ctv,min(tvalues))
-		mxv = max(ctv,max(tvalues))
-		readvalues = responsetemplate.substitute(av=avv,mn=mnv,mx=mxv,ct=ctv)
+		ct = np.random.normal(-50,0,10.0,1)
+        cd = np.random.uniform(-180,180)
+		cp = np.random.uniform(-180,180)
+        cr = np.random.uniform(-180,180)
+        cu = np.random.uniform(-180,180)
+		readvalues = responsetemplate.substitute(cd=cd,cp=cp,cr=cr,cu=cu,ct=ct)
 		return readvalues
 
 	def setTestResponseTimeAndMinTemp(self,rt,mt):

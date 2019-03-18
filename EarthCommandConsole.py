@@ -2,20 +2,28 @@ __author__ = 'ronaldbjork'
 
 import urllib.request, json
 import requests
+import pandas as pd
 
 
 from datetime import datetime,timedelta
 import numpy as np
 import os
 import time
+import boto
+import botocore
 
 from WeatherDataParser import WeatherDataParser
 
 from ConfigParser import ConfigParser
 
+ONEC2 = True
+
 NASA_WEATHER_PROBE_URL = "https://mars.nasa.gov/rss/api/?feed=weather&category=insight&feedtype=json&ver=1.0"
 TEST_PROBE_URL = "http://localhost:5000"
-LOG_FOLDER = "./logs"
+LOG_FOLDER = "logs"
+
+BUCKET_NAME = 's3-to-es-bucket' # replace with your bucket name
+#KEY = 'my_image_in_s3.jpg' # replace with your object key
 
 NORMALRANGE = {'min':-140, 'max':50}  # tempeture Fahrenheit
 
@@ -55,18 +63,38 @@ class EarthCommandConsole():
         self.checkTempeture(sensorData)
         return sensorData
 
+    def readFromLog(self, date): # this could be either from NASA or sensors written from here or KP remote
+        s3 = boto.resource('s3')
+        try:
+            logfilename = "Sensordata5Day_{}.json".format(LOG_FOLDER, str(date.date()))
+            s3.Bucket(BUCKET_NAME).download_file(LOG_FOLDER, logfilename)
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                print("The object does not exist.")
+            else:
+                pass
 
-    def writeToLog(self, data):
+    def writeToLog(self, data, toS3=False, fromEC2=False):
         today = datetime.today()
-        logfile = "{}/log_{}.txt".format(LOG_FOLDER, str(today.date()))
-        if os.path.exists(logfile):
-            with open(logfile,'a') as fp:
-                fp.write(str(data))
-                fp.close()
+        logfilepath = "{}/Sensordata5Day_{}.json".format(LOG_FOLDER, str(today.date()))
+        if toS3:
+            s3 = boto.resource('s3')
+            bucket = s3.Bucket(BUCKET_NAME)
+            bucket.put_object(
+                ACL='public-read',
+                ContentType='application/json',
+                Key=logfilepath,
+                Body=json.dumps(data),
+            )
         else:
-            with open(logfile,'w') as fp:
-                fp.write(str(data))
-                fp.close()
+            if os.path.exists(logfilepath):
+                with open(logfilepath,'a') as fp:
+                    fp.write(str(data))
+                    fp.close()
+            else:
+                with open(logfilepath,'w') as fp:
+                    fp.write(str(data))
+                    fp.close()
 
     def setAlarmTempeture(self,mintempeture):
         pass
@@ -75,14 +103,16 @@ class EarthCommandConsole():
         with urllib.request.urlopen(urlvalue) as url:
             data = json.loads(url.read().decode())
             self.writeToLog(json.dumps(data))
-            with open("./logs/currentSensorData1.json",'w') as fp:
+            with open("./logs/currentSensorData.json",'w') as fp:
                 json.dump(data, fp)
                 fp.close()
-
         return data
 
-    def getMarsWeatherForLastFiveDays(self):
-        self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
+    def getMarsWeatherForLastFiveDays(self,fromNasa):
+        if fromNasa:
+            self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
+        else:
+            self.readFromLog()
         today = datetime.today().date()
         weather = []
         for i in range(5):
@@ -91,8 +121,18 @@ class EarthCommandConsole():
             day = str(dayIn5.day) if dayIn5.day > 9 else '0' + str(dayIn5.day)
             date = "{}-{}-{}".format(dayIn5.year, month, day)
             res = self.weatherDataParser.parseLog4Weather(date)
-            weather.append(res)
-        return weather
+            av = res['Temperature'][0]['AT']['av']
+            mn = res['Temperature'][0]['AT']['mn']
+            mx = res['Temperature'][0]['AT']['mx']
+            wnd = res['Wind'][0]['WD']['0']['ct']
+            val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx,"WIND":wnd}
+            weather.append(val)
+        df = pd.DataFrame(weather)
+        mean = df['TEMPavg'].mean()
+        maxtemp = df['TEMPmax'].max()
+        mintemp = df['TEMPmin'].min()
+        print(mean,maxtemp,mintemp)
+        return (df, mean, maxtemp, mintemp)
 
 
     def testCasehalfSecond(self,urlvalue):
@@ -109,25 +149,9 @@ class EarthCommandConsole():
 
 
 if __name__ == "__main__":
+    ONEC2 = False
     earthConsole = EarthCommandConsole()
-    result = earthConsole.getMarsWeatherForLastFiveDays()
+    result = earthConsole.getMarsWeatherForLastFiveDays(True)
     print(result)
     #result = earthConsole.parseLog4Tempeture("2019-03-04")
     #print(result)
-    #result =earthConsole.parseLog4Tempeture("2019-03-05")
-    #print(result)
-    # result =parseLog4Tempeture("2019-03-06")
-    # print("2019-03-06",result)
-    # result =parseLog4Tempeture("2019-03-07")
-    # print("2019-03-07",result)
-    # result =parseLog4Tempeture("2019-03-08")
-    # print('2019-03-08',result)
-    # result =parseLog4Tempeture("2019-03-09")
-    # print("2019-03-09",result)
-    # result =parseLog4Tempeture("2019-03-10")
-    # print("2019-03-10",result)
-    # result =parseLog4Tempeture("2019-03-11")
-    # print("2019-03-11",result)
-    #loadJson2file()
-    #mean = testCasehalfSecond()
-    #print("mean request time:",str(mean))
