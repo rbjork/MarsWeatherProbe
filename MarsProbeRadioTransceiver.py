@@ -40,6 +40,28 @@ def sendDailyTempeturesV1():
     tempreading = marsProbeTemperatureSensor.getCurrentSensorReadings()  # Version 1.0
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
 
+def setAlarmTempeture(self,mintempeture):
+    self.minTemperature = mintempeture
+
+def checkTempeture(self, sensordata):
+        data = json.loads(sensordata)
+        air_temp_data_1 = data['First_UTCResult']
+        air_temp_data_2 = data['Last_UTCResult']
+        temperature = None
+        if air_temp_data_1:
+            temperature = air_temp_data_1[0]['AT']['mn']
+        elif air_temp_data_2:
+            temperature = air_temp_data_2[0]['AT']['mx']
+
+        if temperature is None:
+            message = "reading failed"
+        elif temperature > self.minTemperature:
+            message = "Temp in normal range"
+        else:
+            message = "Temp below normal range"
+
+        return {'tempeture':temperature,'message':message}
+
 def sendDailyTempeturesV2(tempreading):
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
 

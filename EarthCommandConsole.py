@@ -97,7 +97,7 @@ class EarthCommandConsole():
                     fp.close()
 
     def setAlarmTempeture(self,mintempeture):
-        pass
+        self.minTemperature = mintempeture
 
     def getSensorDataAndSaveToLog(self,urlvalue):
         with urllib.request.urlopen(urlvalue) as url:
