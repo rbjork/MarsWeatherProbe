@@ -1,1 +1,4 @@
 https://vlqojfxgzl.execute-api.us-west-1.amazonaws.com/marsweather1
+headers:
+Content-Type    application/json
+x-api-key
