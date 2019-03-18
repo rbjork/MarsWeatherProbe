@@ -1,0 +1,31 @@
+{
+  "DATETIME": "2019-03-17",
+  "Temperature": [{
+		"DATETIME": "2019-03-16T03:46:41Z",
+		"AT": {
+			"av": -64.47,
+			"ct": 17754,
+			"mn": -96.314,
+			"mx": -15.925
+		}
+	}],
+  "Wind": [{
+		"DATETIME": "2019-03-16T03:46:41Z",
+		"WD": {
+			"0": {
+				"compass_degrees": 0.0,
+				"compass_point": "N",
+				"compass_right": 0.0,
+				"compass_up": 1.0,
+				"ct": 121
+			},
+			"1": {
+				"compass_degrees": 22.5,
+				"compass_point": "NNE",
+				"compass_right": 0.382683432365,
+				"compass_up": 0.923879532511,
+				"ct": 54
+		    }
+		}
+	}]
+}
