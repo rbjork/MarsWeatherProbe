@@ -1,11 +1,16 @@
 __author__ = 'ronaldbjork'
 
-from flask import Flask, render_template, Response
-from flask import request, make_response
+from flask import Flask
+
 import requests
 import socket
+import json
+import urllib
+from datetime import datetime, timedelta
+import time
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
+NASA_WEATHER_PROBE_URL = "https://mars.nasa.gov/rss/api/?feed=weather&category=insight&feedtype=json&ver=1.0"
 
 from MarsProbeTemperatureSensor import MarsProbeTemperatureSensor
 from MarsProbeWindSensor import MarsProbeWindSensor
@@ -16,6 +21,7 @@ app = Flask(__name__, static_folder="../static/dist", template_folder="../static
 
 marsProbeTemperatureSensor = None
 marsProbeWindSensor = None
+weatherDataParser = None
 temp_port = ""
 temp_ip = ""
 wind_port = ""
@@ -28,7 +34,7 @@ AWS_APIGATEWAY = ""
 def getsensorreading():
     tempreading = marsProbeTemperatureSensor.getCurrentSensorReadings()  # Version 1.0
     windreading = marsProbeWindSensor.getCurrentSensorReadings()  # Version 1.0
-    return json.dumps({"status":200})
+    return json.dumps({"Temperature":tempreading, "Wind": windreading})
 
 def sendDailyTempeturesV1():
     tempreading = marsProbeTemperatureSensor.getCurrentSensorReadings()  # Version 1.0
@@ -41,10 +47,10 @@ def sendDailyTempeturesV2(tempreading):
 def post5daysWeatherData(nasa=False):
     headers = {"Content-Type":"application/json", "x-api-key":"fbgAxsG1pr3H7WQrUPoWz4V0aDzF5Knua938WYja"}
     if nasa:
-        with urllib.request.urlopen(urlvalue) as url:
+        with urllib.request.urlopen(NASA_WEATHER_PROBE_URL) as url:
             weatherdata = json.loads(url.read().decode())
             with open("./logs/currentSensorData.json",'w') as fp:
-                json.dump(data, fp)
+                json.dump(weatherdata, fp)
                 fp.close()
 
     daycount = 0
@@ -71,7 +77,7 @@ def post5daysWeatherData(nasa=False):
                 sensorwindreadings = connectWindSensor()
 
             weatherdata4date["Temperature"] = sensortempreadings
-            weatherdata4date["Wind"] = sensorwindreadings})
+            weatherdata4date["Wind"] = sensorwindreadings
 
         r = requests.post(AWS_APIGATEWAY, data=weatherdata4date, headers=headers)
         weaterdata5day.append(weatherdata4date)
@@ -81,7 +87,7 @@ def post5daysWeatherData(nasa=False):
 
 
 def setup():
-    global marsProbeTemperatureSensor, marsProbeWindSensor, AWS_APIGATEWAY, temp_ip, temp_port, wind_ip, wind_port, onboardsensors
+    global marsProbeTemperatureSensor, marsProbeWindSensor,weatherDataParser, AWS_APIGATEWAY, temp_ip, temp_port, wind_ip, wind_port, onboardsensors
     marsProbeTemperatureSensor = MarsProbeTemperatureSensor()
     marsProbeWindSensor = MarsProbeWindSensor()  # not used
     weatherDataParser = WeatherDataParser()
@@ -96,7 +102,6 @@ def setup():
 
 # UPGRADE Version 2.0
 def connectTempetureSensor():
-    tempdata = {}
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: # client
         s.connect((temp_ip, temp_port))
         s.sendall(b'Send Temperature')
@@ -105,8 +110,7 @@ def connectTempetureSensor():
 
 
 # UPGRADE Version 2.0
-def connectWindowSensor():
-    winddata = {}
+def connectWindSensor():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((wind_ip, wind_port))
         s.sendall(b'Send Wind')
