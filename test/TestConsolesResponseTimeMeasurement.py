@@ -1,7 +1,6 @@
 __author__ = 'ronaldbjork'
 import unittest
-import MarsProbeTempetureSensor
-import MarsProbeWindSensor
+import MarsProbeTemperatureSensor
 import EarthCommandConsole
 import numpy as np
 from datetime import datetime
@@ -24,12 +23,16 @@ class TestConsolesResponseTimeMeasurement(unittest.TestCase):
 
     def setUp(self):
         self.responseTime = max(0.0,np.random.normal(.5,.1,1))
-        self.minTempeture = np.random.normal(-80,50,1)
-        self.marsProbe = MarsProbeTempetureSensor.setTestResponseTimeAndMinTemp(self.responseTime, self.minTempeture)
+        self.minTemperature = np.random.normal(-80,50,1)
+        self.tempAbove = self.minTemperature + 10
+        self.tempBelow = self.minTemperature - 10
+        self.marsProbeTemperatureSensor = MarsProbeTemperatureSensor()
+        self.earthCommandConsole = EarthCommandConsole()
+        self.marsProbeTemperatureSensor.setTestResponseTimeAndMinTemp(self.responseTime, self.minTempeture)
 
     def test_responseMeasurement(self):
         start = datetime.now()
-        EarthCommandConsole.getSensorData(True) # True means test only
+        self.earthCommandConsole.getSensorData(True) # True means test only
         end = datetime.now()
         dif = end - start
         self.assertLessEqual(dif,1.1*self.responseTime)
