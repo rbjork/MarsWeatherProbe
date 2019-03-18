@@ -21,8 +21,8 @@ class TestMeasurementLowTemperatureAlarm(unittest.TestCase):
 
     def testLowTempAlarmWithTempBelow(self):
         res = self.marsProbeRadioTransceiver.checkTempeture({[{'AT':{"mn":self.tempBelow}}]})
-        self.assertEqual(res,"Temp in normal range","Good")
+        self.assertEqual(res,"Temp below normal range","Good")
 
     def testLowTempAlarmWithTempAbove(self):
         res = self.marsProbeRadioTransceiver.checkTempeture({[{'AT':{"mn":self.tempAbove}}]})
-        self.assertEqual(res,"Temp below normal range","Good")
+        self.assertEqual(res,"Temp in normal range","Good")
