@@ -1,5 +1,3 @@
-__author__ = 'ronaldbjork'
-
 import boto3
 import re
 import requests
@@ -21,10 +19,26 @@ headers = { "Content-Type": "application/json" }
 s3 = boto3.client('s3')
 
 def handler(event, context):
-
     for record in event['Records']:
         bucket = record['s3']['bucket']['name']
         key = record['s3']['object']['key']
         obj = s3.get_object(Bucket=bucket, Key=key)
+
         body = obj['Body'].read()
-        requests.post(url, auth=awsauth, json=body, headers=headers)
+        data = json.loads(str(body, 'utf-8'))
+        
+        weatherTemperature = data['AT']['av']
+        weatherWindDirection = data['WD']['1']['compass_degrees']
+        
+        timestamp = data['First_UTC']
+        date, time = timestamp.split('T')
+        year, month, day = date.split('-')
+        hour, minute, second = time.split(':')
+        
+        indexdata = {"DateUTC":date, "TimeUTC":time, "Year":year, "Month":month, "Day":day, "Hour":hour, "Type":"weather", "TempAvg":weatherTemperature, "Wind":weatherWindDirection}
+        print(indexdata)
+        r = requests.post(url, auth=awsauth, json=indexdata, headers=headers)
+    return {"status":str(r.status_code)}
+
+
+
