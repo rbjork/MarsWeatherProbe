@@ -22,7 +22,7 @@ fontsizes = {
 
 earthCommandConsole = None
 
-df = None
+
 df = pd.DataFrame({'DAY':[1,2,3,4,5],'TEMPavg':[0,0,0,0,0],'WIND':[0,0,0,0,0]})
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -65,7 +65,7 @@ app.layout = html.Div(style={'backgroundColor':colors['background']}, children=[
     ),
 
     html.Button('Get Weather From NASA', id='read5DayTempNASA_btn'),
-    html.Button('Get Weather From SPACE KP', id='read5DayTempKP_btn'),
+    html.Button('Get Weather From SPACE KB', id='read5DayTempKB_btn'),
     html.Div(id='current-temp-readout'),
     html.Button('Get Current Tempeture', id='readcurrenttemp_btn')
 
@@ -88,7 +88,7 @@ def update_graph(n_clicks):
     'layout': go.Layout(
         xaxis={'type': 'linear', 'title': 'Day', 'showgrid':True, 'showline':True},
         yaxis={'title': 'Temperature', 'showgrid':True, 'showline':True},
-        
+
         margin={'l': 60, 'b': 60, 't': 10, 'r': 50},
         legend={'x': 0, 'y': 1},
         hovermode='closest',
@@ -101,8 +101,8 @@ def update_graph(n_clicks):
     )}
 
 
-# @app.callback(Output('five-day-mars-weather', 'figure'),[Input('read5DayTempKP_btn','n_clicks' )])
-# def getTempDataSpaceKP(n_clicks):
+# @app.callback(Output('five-day-mars-weather', 'figure'),[Input('read5DayTempKB_btn','n_clicks' )])
+# def getTempDataSpaceKB(n_clicks):
 #     print("click")
 #     df = earthCommandConsole.getMarsWeatherForLastFiveDays(True)
 #     print(json.dumps(df))

@@ -63,16 +63,29 @@ class EarthCommandConsole():
         self.checkTempeture(sensorData)
         return sensorData
 
+
     def readFromLog(self, date): # this could be either from NASA or sensors written from here or KP remote
         s3 = boto.resource('s3')
+        data = False
         try:
-            logfilename = "Sensordata5Day_{}.json".format(LOG_FOLDER, str(date.date()))
-            s3.Bucket(BUCKET_NAME).download_file(LOG_FOLDER, logfilename)
+            allfileobjects = s3.list_objects(Bucket=BUCKET_NAME, Prefix="logs/", Delimiter='/')
+            for key in allfileobjects:
+                obj = allfileobjects[key].get()
+                body = obj['Body'].read()
+                logdata = json.loads(str(body, 'utf-8'))
+                datestamp = logdata['DATETIME']
+                if date == datestamp:
+                    data = logdata
+                    break
+
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "404":
                 print("The object does not exist.")
             else:
                 pass
+
+        return data
+
 
     def writeToLog(self, data, toS3=False, fromEC2=False):
         today = datetime.today()
@@ -111,22 +124,28 @@ class EarthCommandConsole():
     def getMarsWeatherForLastFiveDays(self,fromNasa):
         if fromNasa:
             self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
-        else:
-            self.readFromLog()
+
         today = datetime.today().date()
         weather = []
         for i in range(5):
+
             dayIn5 = today - timedelta(days=i+1)
             month = str(dayIn5.month) if dayIn5.month > 9 else '0'+ str(dayIn5.month)
             day = str(dayIn5.day) if dayIn5.day > 9 else '0' + str(dayIn5.day)
             date = "{}-{}-{}".format(dayIn5.year, month, day)
-            res = self.weatherDataParser.parseLog4Weather(date)
-            av = res['Temperature'][0]['AT']['av']
-            mn = res['Temperature'][0]['AT']['mn']
-            mx = res['Temperature'][0]['AT']['mx']
-            wnd = res['Wind'][0]['WD']['0']['ct']
-            val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx,"WIND":wnd}
-            weather.append(val)
+            if fromNasa:
+                res = self.weatherDataParser.parseLog4Weather(date) # Direct From NASA with url call
+            else:
+                res = self.readFromLog(date) # from sensors data posted to AWS S3
+
+            if res and res['Temperature'] and res['Wind']:
+                print(res)
+                av = res['Temperature'][0]['AT']['av']
+                mn = res['Temperature'][0]['AT']['mn']
+                mx = res['Temperature'][0]['AT']['mx']
+                wnd = res['Wind'][0]['WD']['0']['ct']
+                val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx,"WIND":wnd}
+                weather.append(val)
         df = pd.DataFrame(weather)
         mean = df['TEMPavg'].mean()
         maxtemp = df['TEMPmax'].max()
@@ -152,6 +171,11 @@ if __name__ == "__main__":
     ONEC2 = False
     earthConsole = EarthCommandConsole()
     result = earthConsole.getMarsWeatherForLastFiveDays(True)
+    df = result[0]
+    with open("./logs/Sensordata5DayDF.json",'w') as fp:
+        df.to_json(fp)
+        fp.close()
+    df.to_json()
     print(result)
     #result = earthConsole.parseLog4Tempeture("2019-03-04")
     #print(result)

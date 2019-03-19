@@ -30,11 +30,11 @@ class MarsProbeTemperatureSensor():
         self.testEnabled = testEnable
         parser = ConfigParser("./sysconfig.json")
         self.ip = parser.parseParamFromConfig('devices/hub/ip')
-        self.host = parser.parseParamFromConfig('devices/hub/host')
+        self.port = parser.parseParamFromConfig('devices/hub/port')
 
     def connect(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # server
-            s.bind((self.ip, self.host))
+            s.bind((self.ip, self.port))
             s.listen()
             conn, addr = s.accept()
             with conn:
