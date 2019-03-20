@@ -84,8 +84,6 @@ def post5daysWeatherData(nasa=False):
     daycount = 0
     today = datetime.today().date()
 
-    weaterdata5day = []
-
     while daycount < 5:
         time.sleep(1)
         dayIn5 = today - timedelta(days=daycount + 1)
@@ -110,9 +108,9 @@ def post5daysWeatherData(nasa=False):
         r = requests.post(AWS_APIGATEWAY, data=weatherdata4date, headers=headers)
         print(weatherdata4date)
         print(r.status_code)
-        #weaterdata5day.append(weatherdata4date)
+
         daycount += 1
-    #r = requests.post(AWS_APIGATEWAY, data=weaterdata5day, headers=headers)
+
     return
 
 
@@ -150,10 +148,6 @@ def connectWindSensor():
 
 if __name__ == "__main__":
     setup()
-    post5daysWeatherData(True)
-    exit()
-
-
     hostname = socket.gethostname()
     HOST = socket.gethostbyname(hostname)
     ipaddress = "http://" + HOST

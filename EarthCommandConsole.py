@@ -1,7 +1,6 @@
 __author__ = 'ronaldbjork'
 
 import urllib.request, json
-import requests
 import pandas as pd
 
 
@@ -9,7 +8,7 @@ from datetime import datetime,timedelta
 import numpy as np
 import os
 import time
-import boto
+import boto3
 import botocore
 
 from WeatherDataParser import WeatherDataParser
@@ -65,7 +64,7 @@ class EarthCommandConsole():
 
 
     def readFromLog(self, date): # this could be either from NASA or sensors written from here or KP remote
-        s3 = boto.resource('s3')
+        s3 = boto3.resource('s3')
         data = False
         try:
             allfileobjects = s3.list_objects(Bucket=BUCKET_NAME, Prefix="logs/", Delimiter='/')
@@ -91,7 +90,7 @@ class EarthCommandConsole():
         today = datetime.today()
         logfilepath = "{}/Sensordata5Day_{}.json".format(LOG_FOLDER, str(today.date()))
         if toS3:
-            s3 = boto.resource('s3')
+            s3 = boto3.resource('s3')
             bucket = s3.Bucket(BUCKET_NAME)
             bucket.put_object(
                 ACL='public-read',

@@ -27,6 +27,8 @@ df = pd.DataFrame({'DAY':[1,2,3,4,5],'TEMPavg':[0,0,0,0,0],'WIND':[0,0,0,0,0]})
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+application = app.server
+
 app.layout = html.Div(style={'backgroundColor':colors['background']}, children=[
     html.H1(children='Mars Probe Master Control',
         style={
@@ -118,4 +120,5 @@ def setup():
 
 if __name__ == "__main__":
     setup()
-    app.run_server(debug=True)
+    #app.run_server(debug=True,port=8080)
+    application.run(debug=True, port=8080)
