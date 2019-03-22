@@ -28,7 +28,7 @@ wind_port = ""
 wind_ip = ""
 onboardsensors = False
 
-AWS_APIGATEWAY = ""
+AWS_APIGATEWAY = "https://vlqojfxgzl.execute-api.us-west-1.amazonaws.com/marsweather1"
 
 
 @app.route("/getsensorreading", methods=['GET'])
@@ -105,7 +105,9 @@ def post5daysWeatherData(nasa=False):
             weatherdata4date["Temperature"] = sensortempreadings
             weatherdata4date["Wind"] = sensorwindreadings
 
-        r = requests.post(AWS_APIGATEWAY, data=weatherdata4date, headers=headers)
+        print("APIGATEWAY URL",AWS_APIGATEWAY)
+        print("headers",headers)
+        r = requests.post('https://vlqojfxgzl.execute-api.us-west-1.amazonaws.com/marsweather1', json=weatherdata4date, headers=headers)
         print(weatherdata4date)
         print(r.status_code)
 
@@ -148,8 +150,11 @@ def connectWindSensor():
 
 if __name__ == "__main__":
     setup()
+    post5daysWeatherData(True)
+    exit()
     hostname = socket.gethostname()
     HOST = socket.gethostbyname(hostname)
     ipaddress = "http://" + HOST
     print(ipaddress)
     app.run(host=HOST, port=5000, threaded=True)
+

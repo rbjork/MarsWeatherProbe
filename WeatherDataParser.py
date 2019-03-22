@@ -52,10 +52,11 @@ class WeatherDataParser():
             else:
                 return False
 
-    def parseLog4Weather(self, date):
-        with open("./logs/currentSensorData.json",'r') as fp:
-            data = json.loads(fp.read())
-            fp.close()
+    def parseLog4Weather(self, date, data=None):
+        if data is None:
+            with open("./logs/currentSensorData.json",'r') as fp:
+                data = json.loads(fp.read())
+                fp.close()
         First_UTCResultT = self.parse_temperature_sensor_json(data,'First_UTC',date)
         Last_UTCResultT = self.parse_temperature_sensor_json(data,'Last_UTC',date)
         First_UTCResultW = self.parse_wind_sensor_json(data,'First_UTC',date)

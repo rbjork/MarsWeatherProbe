@@ -2,7 +2,7 @@ __author__ = 'ronaldbjork'
 
 import urllib.request, json
 import pandas as pd
-
+import logging
 
 from datetime import datetime,timedelta
 import numpy as np
@@ -34,6 +34,9 @@ class EarthCommandConsole():
         parser = ConfigParser("./sysconfig.json")
         self.weatherDataParser = WeatherDataParser()
         self.awsapi = parser.parseParamFromConfig('cloud/aws_apigateway/url')
+        self.logger = logging.getLogger('debug_application')
+        self.logger.setLevel(logging.DEBUG)
+
 
 
     def checkTempeture(self, sensordata):
@@ -64,18 +67,21 @@ class EarthCommandConsole():
 
 
     def readFromLog(self, date): # this could be either from NASA or sensors written from here or KP remote
-        s3 = boto3.resource('s3')
+        s3 = boto3.client('s3')
         data = False
         try:
-            allfileobjects = s3.list_objects(Bucket=BUCKET_NAME, Prefix="logs/", Delimiter='/')
-            for key in allfileobjects:
-                obj = allfileobjects[key].get()
-                body = obj['Body'].read()
-                logdata = json.loads(str(body, 'utf-8'))
-                datestamp = logdata['DATETIME']
-                if date == datestamp:
-                    data = logdata
-                    break
+            contents = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix="logs/", Delimiter='/')['Contents']
+            for obj in contents:
+                objpath = obj['Key']
+                if "Sensordata_" in objpath:
+                    print(objpath)
+                    datestr = objpath.split('_')[1]
+                    if date in datestr:
+                        fileobject = s3.get_object(Bucket=BUCKET_NAME, Key=objpath)
+                        body = fileobject['Body'].read()
+                        logdata = json.loads(str(body, 'utf-8'))
+                        data = logdata
+                        break
 
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "404":
@@ -114,42 +120,37 @@ class EarthCommandConsole():
     def getSensorDataAndSaveToLog(self,urlvalue):
         with urllib.request.urlopen(urlvalue) as url:
             data = json.loads(url.read().decode())
-            self.writeToLog(json.dumps(data))
-            with open("./logs/currentSensorData.json",'w') as fp:
-                json.dump(data, fp)
-                fp.close()
         return data
 
     def getMarsWeatherForLastFiveDays(self,fromNasa):
+        self.logger.info('logging getMarsWeatherForLastFiveDays call')
         if fromNasa:
-            self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
+            data = self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
 
         today = datetime.today().date()
         weather = []
-        for i in range(5):
-
+        for i in range(6):
             dayIn5 = today - timedelta(days=i+1)
             month = str(dayIn5.month) if dayIn5.month > 9 else '0'+ str(dayIn5.month)
             day = str(dayIn5.day) if dayIn5.day > 9 else '0' + str(dayIn5.day)
             date = "{}-{}-{}".format(dayIn5.year, month, day)
             if fromNasa:
-                res = self.weatherDataParser.parseLog4Weather(date) # Direct From NASA with url call
+                res = self.weatherDataParser.parseLog4Weather(date, data) # Direct From NASA with url call
             else:
                 res = self.readFromLog(date) # from sensors data posted to AWS S3
-
-            if res and res['Temperature'] and res['Wind']:
-                print(res)
+            self.logger.info('logging getMarsWeatherForLastFiveDays day')
+            if res and res['Temperature']:# and res['Wind']:
                 av = res['Temperature'][0]['AT']['av']
                 mn = res['Temperature'][0]['AT']['mn']
                 mx = res['Temperature'][0]['AT']['mx']
-                wnd = res['Wind'][0]['WD']['0']['ct']
-                val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx,"WIND":wnd}
+                print("add")
+                #wnd = res['Wind'][0]['WD']['0']['ct']
+                val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx}
                 weather.append(val)
         df = pd.DataFrame(weather)
         mean = df['TEMPavg'].mean()
         maxtemp = df['TEMPmax'].max()
         mintemp = df['TEMPmin'].min()
-        print(mean,maxtemp,mintemp)
         return (df, mean, maxtemp, mintemp)
 
 
@@ -169,12 +170,12 @@ class EarthCommandConsole():
 if __name__ == "__main__":
     ONEC2 = False
     earthConsole = EarthCommandConsole()
-    result = earthConsole.getMarsWeatherForLastFiveDays(True)
+    result = earthConsole.getMarsWeatherForLastFiveDays(False)
     df = result[0]
-    with open("./logs/Sensordata5DayDF.json",'w') as fp:
-        df.to_json(fp)
-        fp.close()
-    df.to_json()
-    print(result)
+    print(df)
+    #with open("./logs/Sensordata5DayDF.json",'w') as fp:
+    #    df.to_json(fp)
+    #    fp.close()
+    #print(df)
     #result = earthConsole.parseLog4Tempeture("2019-03-04")
     #print(result)

@@ -24,12 +24,11 @@ earthCommandConsole = None
 
 
 df = pd.DataFrame({'DAY':[1,2,3,4,5],'TEMPavg':[0,0,0,0,0],'WIND':[0,0,0,0,0]})
-
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
 application = app.server
 
 app.layout = html.Div(style={'backgroundColor':colors['background']}, children=[
+
     html.H1(children='Mars Probe Master Control',
         style={
             'textAlign': 'center',
@@ -66,19 +65,38 @@ app.layout = html.Div(style={'backgroundColor':colors['background']}, children=[
         }
     ),
 
-    html.Button('Get Weather From NASA', id='read5DayTempNASA_btn'),
-    html.Button('Get Weather From SPACE KB', id='read5DayTempKB_btn'),
+    html.Button('Get Weather Data', id='read5DayTemp_btn'),
+    dcc.RadioItems(
+        id='data-source-choice',
+        options=[
+            {'label': 'DATA FROM NASA', 'value': 'DNASA'},
+            {'label': 'DATA FROM KB SENSORS', 'value': 'DKB'},
+        ],
+        value='DNASA'
+    ),
     html.Div(id='current-temp-readout'),
     html.Button('Get Current Tempeture', id='readcurrenttemp_btn')
 
 ])
 
-@app.callback(Output('five-day-mars-weather', 'figure'),[Input('read5DayTempNASA_btn','n_clicks' )])
-def update_graph(n_clicks):
+@app.callback(Output('five-day-mars-weather', 'figure'),[Input('read5DayTemp_btn','n_clicks' ),Input('data-source-choice','value')])
+def update_graph(n_clicks,sourcechoice):
     global df
     print("click")
-    df, tmean, tmax, tmin = earthCommandConsole.getMarsWeatherForLastFiveDays(True)
-    return {'data': [
+    if sourcechoice == "DNASA":
+        df, tmean, tmax, tmin = earthCommandConsole.getMarsWeatherForLastFiveDays(True)
+    else:
+        df, tmean, tmax, tmin = earthCommandConsole.getMarsWeatherForLastFiveDays(False)
+    return returnGraphics(df)
+
+@app.callback(Output('current-temp-readout',component_property='children'), [Input('data-source-choice','value')])
+def setWeatherSource(val):
+    print(val)
+    return val
+
+
+def returnGraphics(df):
+     return {'data': [
         go.Scatter(
             x=df['DAY'],
             y=df['TEMPavg'],
@@ -103,15 +121,9 @@ def update_graph(n_clicks):
     )}
 
 
-# @app.callback(Output('five-day-mars-weather', 'figure'),[Input('read5DayTempKB_btn','n_clicks' )])
-# def getTempDataSpaceKB(n_clicks):
-#     print("click")
-#     df = earthCommandConsole.getMarsWeatherForLastFiveDays(True)
-#     print(json.dumps(df))
-
-@app.callback(Output(component_id='current-temp-readout', component_property='children'),[Input('readcurrenttemp_btn','n_clicks')])
-def getCurrentTemp(n_clicks):
-    pass
+#@app.callback(Output(component_id='current-temp-readout', component_property='children'),[Input('readcurrenttemp_btn','n_clicks')])
+#def getCurrentTemp(n_clicks):
+#    pass
 
 def setup():
     global earthCommandConsole
@@ -120,5 +132,4 @@ def setup():
 
 if __name__ == "__main__":
     setup()
-    #app.run_server(debug=True,port=8080)
     application.run(debug=True, port=8080)
