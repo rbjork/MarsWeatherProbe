@@ -12,18 +12,14 @@ app = Flask(__name__)
 
 earthCommandConsole = EarthCommandConsole()
 
-tavg = [random.uniform(1,10) for i in range(5)]
-tmin = [random.uniform(1,10) for i in range(5)]
-tmax = [random.uniform(1,10) for i in range(5)]
-windspeed = [random.uniform(1,10) for i in range(5)]
-winddirection = [random.uniform(1,10) for i in range(5)]
+tavg = [random.uniform(-100,10) for i in range(5)]
+tmin = [random.uniform(-100,10) for i in range(5)]
+tmax = [random.uniform(-100,10) for i in range(5)]
+windspeed = [random.uniform(0,100) for i in range(5)]
+winddirection = [random.uniform(0,359) for i in range(5)]
 
 df = pd.DataFrame({'DAY':[1,2,3,4,5],'TEMPavg':tavg, 'TEMPmin':tmin, 'TEMPmax':tmax, 'WINDSPEED':windspeed, 'WINDDIRECTION':winddirection})
 
-# @app.route('/<string:page_name>/')
-# def render_weather(page_name):
-#     user = "ron bjork"
-#     return render_template('%s.html' % page_name, name = user, wvalues = df.to_json())
 
 @app.route('/weatherlast5days/<string:datevalue>/')
 def weatherlast5days(datevalue):
@@ -32,9 +28,14 @@ def weatherlast5days(datevalue):
     df = earthCommandConsole.getMarsWeatherForLastFiveDays(datevalue)
     return render_template('weathergraph.html', name = user,  wvalues = df.to_json())
 
-@app.route('/getweatherlast5days/<string:datevalue>/')
+@app.route('/getweatherlast5days/<string:choice>/')
+def getweatherlast5days(choice):
+    df = earthCommandConsole.getMarsWeatherForLastFiveDays(choice=="NASA")
+    return {'weatherdata':df.to_json()}
+
+@app.route('/get5daysweather/<string:datevalue>/')
 def getweatherlast5days(datevalue):
-    df = earthCommandConsole.getMarsWeatherForLastFiveDays(datevalue)
+    df = earthCommandConsole.getMarsWeatherForFiveDays(False,datevalue)
     return {'weatherdata':df.to_json()}
 
 @app.route('/')

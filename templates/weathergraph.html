@@ -96,35 +96,59 @@
             Plotly.newPlot('weatherDiv', tempdata, layout);
             Plotly.newPlot('weatherDivs', winddata, layout2);
 
-        }
+        };
 
-        function getlast5daysweather(datevale,choice){
+        function getlast5daysweather(choice){
             var self = this;
             var self.choice = choice;
             var ipaddress = window.location.href;
-            fetch(ipaddress + 'getMarsWeatherForFiveDays/'+datevale)
+            fetch(ipaddress + 'getweatherlast5days/'+choice)
                 .then(response => response.json())
                 .then(json => {
-                        var success = json['success']
-                        if(success == false || success == "false"){
-                            alert("Could not get weather data");
-                            return;
-                        }
-                        self.weatherdata = = json['weatherdata'];
-                        self.plotweather('NASA')
+                    var success = json['success']
+                    if(success == false || success == "false"){
+                        alert("Could not get weather data");
+                        return;
+                    }
+                    self.weatherdata = = json['weatherdata'];
+                    self.plotweather()
+                    return;
             }).catch(error => console.log('Oops,error:', error));
-        }
+        };
+
+        function get5daysweather(){
+            var datevalue = document.getElementById("datachoice").innerText;
+            var self = this;
+            var self.choice = choice;
+            var ipaddress = window.location.href;
+            fetch(ipaddress + 'get5daysweather/'+datevalue)
+                .then(response => response.json())
+                .then(json => {
+                    var success = json['success']
+                    if(success == false || success == "false"){
+                        alert("Could not get weather data");
+                        return;
+                    }
+                    self.weatherdata = = json['weatherdata'];
+                    self.plotweather();
+                    return;
+            }).catch(error => console.log('Oops,error:', error));
+        };
 
     </script>
 </head>
-<body onload="plottester()">
+<body onload="plotweather()">
 <h1>Hello {{ name }}!</h1>
 <div id="weatherDiv" style="width:600px;height:350px;"></div><br>
 <div id="weatherDivs" style="width:600px;height:300px;"></div>
 <form>
-    <input type="text" value="Enter data in format yyyy-mm-dd"/><br>
-    <input type="button" value="NASA" onclick="plottester('NASA')"/><br>
-    <input type="button" value="SPACE KB" onclick="plottester('SPACEKB')"/>
+    <h3>FIVE DAYS BEFORE DATE:</h3><br>
+    <input id="datachoice" type="text" value="Enter data in format yyyy-mm-dd"/><br>
+    <input type="button" value="NASA" onclick="get5daysweather()"/><br><br>
+
+    <h3>LAST FIVE DAYS</h3>
+    <input type="button" value="NASA" onclick="getlast5daysweather('NASA')"/><br>
+    <input type="button" value="SPACE KB" onclick="getlast5daysweather('SPACEKB')"/>
 </form>
 </body>
 </html>
