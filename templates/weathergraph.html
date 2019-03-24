@@ -15,11 +15,9 @@
             return vals;
         }
 
-        var weatherdata = {{weatherdata}};
+        var weatherdata = JSON.parse({{weatherdata}});
 
         function plotweather(){
-
-            var weatherdatajson = JSON.parse(weatherdata);
 
             days = convertdict2array(weatherdatajson['DAYS']);
             tavg = convertdict2array(weatherdatajson['TEMPavg']);
@@ -100,7 +98,6 @@
 
         function getlast5daysweather(choice){
             var self = this;
-            var self.choice = choice;
             var ipaddress = window.location.href;
             fetch(ipaddress + 'getweatherlast5days/'+choice)
                 .then(response => response.json())
@@ -117,9 +114,8 @@
         };
 
         function get5daysweather(){
-            var datevalue = document.getElementById("datachoice").innerText;
+            var datevalue = document.getElementById("datechoice").innerText;
             var self = this;
-            var self.choice = choice;
             var ipaddress = window.location.href;
             fetch(ipaddress + 'get5daysweather/'+datevalue)
                 .then(response => response.json())
