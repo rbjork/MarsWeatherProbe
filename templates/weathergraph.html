@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script>
+    <script lang="javascript">
         // '{"DAY":{"0":1,"1":2,"2":3,"3":4,"4":5},"TEMPavg":{"0":6.6387078363,"1":5.3243396168,"2":6.8372454089,"3":9.3313912163,"4":9.8231479203},"TEMPmin":{"0":7.1097781144,"1":2.9916525281,"2":9.8920042122,"3":5.5990140593,"4":6.6688609722},"TEMPmax":{"0":1.4128975929,"1":1.4946117154,"2":7.5317295833,"3":1.087720315,"4":4.2100709598},"WINDSPEED":{"0":2.845104114,"1":3.3368661294,"2":4.3475763762,"3":1.3545927375,"4":9.5816686048},"WINDDIRECTION":{"0":5.6988176286,"1":6.7164586215,"2":1.485175058,"3":9.8082685747,"4":5.4518754412}}'
         function convertdict2array(dict){
             var vals = [];
@@ -15,15 +15,19 @@
             return vals;
         }
 
-        var weatherdata = JSON.parse({{weatherdata}});
+
+
+        var weatherdata = '{{wvalues|safe}}';
 
         function plotweather(){
 
-            days = convertdict2array(weatherdatajson['DAYS']);
-            tavg = convertdict2array(weatherdatajson['TEMPavg']);
-            tmin = convertdict2array(weatherdatajson['TEMPmin']);
-            tmax = convertdict2array(weatherdatajson['TEMPmax']);
-            wind = convertdict2array(weatherdatajson['TEMPwind']);
+            var weatherdatajson = JSON.parse(weatherdata);
+
+            var days = convertdict2array(weatherdatajson['DAY']);
+            var tavg = convertdict2array(weatherdatajson['TEMPavg']);
+            var tmin = convertdict2array(weatherdatajson['TEMPmin']);
+            var tmax = convertdict2array(weatherdatajson['TEMPmax']);
+            var wind = convertdict2array(weatherdatajson['TEMPwind']);
 
             var TempAVG = {
                 x: days,
@@ -32,7 +36,7 @@
                 name: 'Temp Average',
                 line: {
                     color: 'rgb(100, 219, 100)',
-                    width: 3
+                    width: 2
                 }
             };
 
@@ -43,7 +47,7 @@
                 name: 'Temp Min',
                 line: {
                     color: 'rgb(120, 180, 219)',
-                    width: 3
+                    width: 2
                 }
             };
 
@@ -54,7 +58,7 @@
                 name: 'Temp Max',
                 line: {
                     color: 'rgb(219, 64, 64)',
-                    width: 3
+                    width: 2
                 }
             };
 
@@ -65,7 +69,7 @@
                 name: 'Wind Speed',
                 line: {
                     color: 'rgb(50, 50, 50)',
-                    width: 3
+                    width: 2
                 }
             };
 
@@ -107,14 +111,14 @@
                         alert("Could not get weather data");
                         return;
                     }
-                    self.weatherdata = = json['weatherdata'];
+                    self.weatherdata =  json['weatherdata'];
                     self.plotweather()
                     return;
             }).catch(error => console.log('Oops,error:', error));
         };
 
         function get5daysweather(){
-            var datevalue = document.getElementById("datechoice").innerText;
+            var datevalue = document.getElementById("datechoice").value;
             var self = this;
             var ipaddress = window.location.href;
             fetch(ipaddress + 'get5daysweather/'+datevalue)
@@ -125,7 +129,7 @@
                         alert("Could not get weather data");
                         return;
                     }
-                    self.weatherdata = = json['weatherdata'];
+                    self.weatherdata =  json['weatherdata'];
                     self.plotweather();
                     return;
             }).catch(error => console.log('Oops,error:', error));
@@ -139,7 +143,7 @@
 <div id="weatherDivs" style="width:600px;height:300px;"></div>
 <form>
     <h3>FIVE DAYS BEFORE DATE:</h3><br>
-    <input id="datachoice" type="text" value="Enter data in format yyyy-mm-dd"/><br>
+    <input id="datechoice" type="text" value="Enter data in format yyyy-mm-dd"/><br>
     <input type="button" value="NASA" onclick="get5daysweather()"/><br><br>
 
     <h3>LAST FIVE DAYS</h3>

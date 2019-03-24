@@ -10,6 +10,7 @@ import os
 import time
 import boto3
 import botocore
+import pdb
 
 from WeatherDataParser import WeatherDataParser
 
@@ -122,15 +123,25 @@ class EarthCommandConsole():
             data = json.loads(url.read().decode())
         return data
 
+
     def getMarsWeatherForLastFiveDays(self,fromNasa):
+        today = datetime.today().date()
+        return self.getMarsWeatherForFiveDays(fromNasa, today)
+
+
+    def getMarsWeatherForFiveDays(self, fromNasa, fromDate):
         self.logger.info('logging getMarsWeatherForLastFiveDays call')
         if fromNasa:
             data = self.getSensorDataAndSaveToLog(NASA_WEATHER_PROBE_URL)
 
-        today = datetime.today().date()
+        if type(fromDate) is str:
+            fromDate = datetime.strptime(fromDate, '%Y-%m-%d')
+
+
+
         weather = []
         for i in range(6):
-            dayIn5 = today - timedelta(days=i+1)
+            dayIn5 = fromDate - timedelta(days=i+1)
             month = str(dayIn5.month) if dayIn5.month > 9 else '0'+ str(dayIn5.month)
             day = str(dayIn5.day) if dayIn5.day > 9 else '0' + str(dayIn5.day)
             date = "{}-{}-{}".format(dayIn5.year, month, day)
@@ -147,11 +158,13 @@ class EarthCommandConsole():
                 #wnd = res['Wind'][0]['WD']['0']['ct']
                 val = {"DATE":date,"DAY":day,"TEMPavg":av,"TEMPmin":mn,"TEMPmax":mx}
                 weather.append(val)
+
+
         df = pd.DataFrame(weather)
-        mean = df['TEMPavg'].mean()
-        maxtemp = df['TEMPmax'].max()
-        mintemp = df['TEMPmin'].min()
-        return (df, mean, maxtemp, mintemp)
+        #mean = df['TEMPavg'].mean()
+        #maxtemp = df['TEMPmax'].max()
+        #mintemp = df['TEMPmin'].min()
+        return df
 
 
     def testCasehalfSecond(self,urlvalue):

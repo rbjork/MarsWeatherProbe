@@ -2,8 +2,9 @@ __author__ = 'ronaldbjork'
 
 from flask import Flask, render_template
 import os
-
+import pdb
 from EarthCommandConsole import EarthCommandConsole
+import json
 
 import pandas as pd
 import random
@@ -26,21 +27,27 @@ def weatherlast5days(datevalue):
     global df
     user = "ron bjork"
     df = earthCommandConsole.getMarsWeatherForLastFiveDays(datevalue)
-    return render_template('weathergraph.html', name = user,  wvalues = df.to_json())
+    df_json = df.to_json()
+    return render_template('weathergraph.html', name = user,  wvalues = df_json)
 
 @app.route('/getweatherlast5days/<string:choice>/')
 def getweatherlast5days(choice):
     df = earthCommandConsole.getMarsWeatherForLastFiveDays(choice=="NASA")
-    return {'weatherdata':df.to_json()}
+    df_json = df.to_json()
+    res = {"success":True, "weatherdata":df_json}
+    return json.dumps(res)
 
-@app.route('/get5daysweather/<string:datevalue>/')
-def getweatherlast5days(datevalue):
+@app.route('/get5daysweather/<string:datevalue>')
+def get5daysweather(datevalue):
     df = earthCommandConsole.getMarsWeatherForFiveDays(False,datevalue)
-    return {'weatherdata':df.to_json()}
+    df_json = df.to_json()
+    res = {"success":True, "weatherdata":df_json}
+    return json.dumps(res)
 
 @app.route('/')
 def render_home():
-    user = "ron bjork"
+    user = "Ron"
+    print(df.to_json())
     return render_template('weathergraph.html', name = user,  wvalues = df.to_json())
 
 if __name__ == '__main__':
