@@ -26,13 +26,14 @@ BUCKET_NAME = 's3-to-es-bucket' # replace with your bucket name
 #KEY = 'my_image_in_s3.jpg' # replace with your object key
 
 NORMALRANGE = {'min':-140, 'max':50}  # tempeture Fahrenheit
+HOMEDIR = "/var/www/html/kitchenbrains/"
 
 # INSPIRED FROM https://qiita.com/bmj0114/items/db9f7b9486769940c422
 
 class EarthCommandConsole():
 
     def __init__(self):
-        parser = ConfigParser("./sysconfig.json")
+        parser = ConfigParser(HOMEDIR + "sysconfig.json")
         self.weatherDataParser = WeatherDataParser()
         self.awsapi = parser.parseParamFromConfig('cloud/aws_apigateway/url')
         self.logger = logging.getLogger('debug_application')

@@ -69,6 +69,7 @@ def checkTempeture(self, sensordata):
 
 def sendDailyTempeturesV2(tempreading):
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
+    return r
 
 
 @app.route("/post5daysweatherdata", methods=['GET'])
@@ -113,7 +114,7 @@ def post5daysWeatherData(nasa=False):
 
         daycount += 1
 
-    return
+    return r
 
 
 def setup():
@@ -157,4 +158,3 @@ if __name__ == "__main__":
     ipaddress = "http://" + HOST
     print(ipaddress)
     app.run(host=HOST, port=5000, threaded=True)
-
