@@ -33,27 +33,29 @@ HOMEDIR = "/var/www/html/kitchenbrains/"
 class EarthCommandConsole():
 
     def __init__(self):
-        parser = ConfigParser(HOMEDIR + "sysconfig.json")
+        #parser = ConfigParser(HOMEDIR + "sysconfig.json")
+        parser = ConfigParser("sysconfig.json")
         self.weatherDataParser = WeatherDataParser()
         self.awsapi = parser.parseParamFromConfig('cloud/aws_apigateway/url')
         self.logger = logging.getLogger('debug_application')
         self.logger.setLevel(logging.DEBUG)
 
 
-
     def checkTempeture(self, sensordata):
+
         data = json.loads(sensordata)
-        air_temp_data_1 = data['First_UTCResult']
-        air_temp_data_2 = data['Last_UTCResult']
+        #print("checkTempeture",data)
+        air_temp_data_1 = data['108']['First_UTC']
+        air_temp_data_2 = data['108']['Last_UTC']
         tempeture = None
         if air_temp_data_1:
-            tempeture = air_temp_data_1[0]['AT']['mn']
+            tempeture = data['108']['AT']['mn']
         elif air_temp_data_2:
-            tempeture = air_temp_data_2[0]['AT']['mx']
+            tempeture = data['108']['AT']['mn']
 
         if tempeture is None:
             message = "reading failed"
-        elif tempeture < NORMALRANGE.min:
+        elif tempeture < NORMALRANGE['min']:
             message = "Temp in normal range"
         else:
             message = "Temp below normal range"

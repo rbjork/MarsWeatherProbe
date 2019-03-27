@@ -68,7 +68,9 @@ def checkTempeture(self, sensordata):
 
 
 def sendDailyTempeturesV2(tempreading):
+    print("sending daily temperature")
     r = requests.post(AWS_APIGATEWAY, data=tempreading)
+    print(r.status_code)
     return r
 
 
@@ -152,6 +154,8 @@ def connectWindSensor():
 if __name__ == "__main__":
     setup()
     post5daysWeatherData(True)
+    data = getsensorreading()
+    sendDailyTempeturesV2(data)
     exit()
     hostname = socket.gethostname()
     HOST = socket.gethostbyname(hostname)

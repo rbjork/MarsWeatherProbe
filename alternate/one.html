@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        function plottester(choice){
+            if(choice == 'NASA'){
+                WeatherGraph = document.getElementById('weathergraph');
+                Plotly.plot( WeatherGraph, [{
+                    x: [1, 2, 3, 4, 5],
+                    y: [1, 2, 4, 8, 16] }], {
+                    margin: { t: 0 } } );
+            }else{
+                WeatherGraph = document.getElementById('weathergraph');
+                Plotly.plot( WeatherGraph, [{
+                    x: [1, 2, 3, 4, 5],
+                    y: [1, 2, 7, 8, 9] }], {
+                    margin: { t: 0 } } );
+            }
+
+        }
+
+        </script>
+</head>
+<body onload="plottester()">
+<div id="weathergraph" style="width:600px;height:250px;"></div>
+<form>
+    <input type="button" value="NASA" onclick="plottester('NASA')"/><br>
+    <input type="button" value="SPACE KB" onclick="plottester('SPACEKB')"/>
+</form>
+</body>
+</html>

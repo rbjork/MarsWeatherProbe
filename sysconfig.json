@@ -27,5 +27,9 @@
     "aws_s3":{
       "url": ""
     }
+  },
+  "test":{
+    "mintemperature":-50,
+    "responsetime":2
   }
 }

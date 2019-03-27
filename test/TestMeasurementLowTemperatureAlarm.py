@@ -1,8 +1,10 @@
 import unittest
-import unittest
-import MarsProbeTemperatureSensor
-import EarthCommandConsole
-import MarsProbeWindSensor
+import sys
+
+
+from MarsProbeTemperatureSensor import MarsProbeTemperatureSensor
+from EarthCommandConsole import EarthCommandConsole
+from MarsProbeWindSensor import MarsProbeWindSensor
 import MarsProbeRadioTransceiver
 import numpy as np
 from datetime import datetime
@@ -16,7 +18,7 @@ class TestMeasurementLowTemperatureAlarm(unittest.TestCase):
         self.tempAbove = self.minTemperature + 10
         self.tempBelow = self.minTemperature - 10
         self.marsProbeTemperatureSensor = MarsProbeTemperatureSensor()
-        self.marsProbeRadioTransceiver = MarsProbeRadioTransceiver()
+        self.marsProbeRadioTransceiver = MarsProbeRadioTransceiver
         self.marsProbeTemperatureSensor.setTestResponseTimeAndMinTemp(self.responseTime, self.minTempeture)
 
     def testLowTempAlarmWithTempBelow(self):

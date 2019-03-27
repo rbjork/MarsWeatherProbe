@@ -15,6 +15,6 @@ class ConfigParser():
         for i in range(len(path)):
             config = config[path[i]]
         if type(config) is dict:
-            return json.dumps(config)
+            return json.loads(config)
         else:
             return str(config)

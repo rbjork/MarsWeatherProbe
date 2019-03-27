@@ -51,7 +51,7 @@ class MarsProbeWindSensor():
                     conn.sendall(winddata)
 
     def getCurrentSensorReadings(self):
-        ct = np.random.normal(-50, 0, 10.0, 1)
+        ct = np.random.normal(-50, 0, 10)
         cd = np.random.uniform(-180, 180)
         cp = np.random.uniform(-180, 180)
         cr = np.random.uniform(-180, 180)

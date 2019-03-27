@@ -1,7 +1,10 @@
 __author__ = 'ronaldbjork'
 import unittest
-import MarsProbeTemperatureSensor
-import EarthCommandConsole
+import sys
+
+from MarsProbeTemperatureSensor import MarsProbeTemperatureSensor
+from EarthCommandConsole import EarthCommandConsole
+from ConfigParser import ConfigParser
 import numpy as np
 from datetime import datetime
 TEST_PROBE_URL = "localhost:5000"
@@ -19,23 +22,35 @@ TEST_PROBE_URL = "localhost:5000"
 #       Related Requirements: The system needs to have proven data
 #       integrity and mapping of requests to responses.
 
+NASA_WEATHER_PROBE_URL = "https://mars.nasa.gov/rss/api/?feed=weather&category=insight&feedtype=json&ver=1.0"
+
 class TestConsolesResponseTimeMeasurement(unittest.TestCase):
 
     def setUp(self):
-        self.responseTime = max(0.0,np.random.normal(.5,.1,1))
-        self.minTemperature = np.random.normal(-80,50,1)
+        print("setUp")
+        parser = ConfigParser("sysconfig.json")
+        self.minTemperature = float(parser.parseParamFromConfig("test/mintemperature"))
+        self.responseTime = int(parser.parseParamFromConfig("test/responsetime"))
         self.tempAbove = self.minTemperature + 10
         self.tempBelow = self.minTemperature - 10
-        self.marsProbeTemperatureSensor = MarsProbeTemperatureSensor()
         self.earthCommandConsole = EarthCommandConsole()
-        self.marsProbeTemperatureSensor.setTestResponseTimeAndMinTemp(self.responseTime, self.minTempeture)
+        self.marsProbeTemperatureSensor = MarsProbeTemperatureSensor(True)
 
     def test_responseMeasurement(self):
         start = datetime.now()
-        self.earthCommandConsole.getSensorData(True) # True means test only
+        self.earthCommandConsole.getSensorData(NASA_WEATHER_PROBE_URL) # True means test only
         end = datetime.now()
         dif = end - start
-        self.assertLessEqual(dif,1.1*self.responseTime)
+        self.assertLessEqual(dif.seconds, self.responseTime)
 
-    def test_minTempetureReading(self):
-        pass
+    def runTest(self):
+        print("running Sensor tests")
+        self.test_responseMeasurement()
+
+        #assert(True == True)
+
+    #def test_minTempetureReading(self):
+    #    pass
+
+    if __name__ == "__main__":
+        unittest.main()
