@@ -1,8 +1,8 @@
-This project(residing in https:/github/rbjork/MarsWeatherProbe) contains the code for building a AWS cloud based IoT application.  As with most IoT application, it contains code to support device(s) calls to the cloud,  code to run on the cloud, and code that runs on a monitoring/control applications for humans can interact with.  
+This project(residing in https:/github/rbjork/MarsWeatherProbe) contains the code for building a AWS cloud based IoT application.  As with most IoT application, it contains code to support device(s) calls to the cloud,  code to run on the cloud, and code that runs on a monitoring/control applications for humans to interact with.  
 
-This project was started with the intentions to meet several requirements.  Assume a data source containing weather data is being generated on a daily basis from the planet Mars.  Come up with a solution to receive, record and measure the average temperature.  Also, trigger some kind event when the temperature drops below some specified value.
+This project was started with the intention to meet several requirements as stated in the following:  Assume a data source containing weather data is being generated on a daily basis from the planet Mars.  Come up with a solution to receive, record and measure the average temperature.  Also, trigger some kind event when the temperature drops below some specified value.
 
-The following assumptions were made after this basic specification was provided.  First that Amazon Web Services (AWS) would be used and those services would accumulate a log of temperature readings along with meta information.
+The following assumptions were made after the above specification was provided.  First that Amazon Web Services (AWS) would be used and those services would accumulate a log of temperature readings along with meta information.
 
 Final design:
 
